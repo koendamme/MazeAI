@@ -1,23 +1,31 @@
 from maze import Maze
 
-maze = Maze("maze.txt")
+
+maze = Maze(2)
 
 maze.print()
-print(maze.get_player_position())
 
-i = input()
 
-if i == 'U':
-    maze.move_up()
-    maze.print()
-elif i == 'L':
-    maze.move_left()
-    maze.print()
-elif i == 'R':
-    maze.move_right()
-    maze.print()
-elif i == 'D':
-    maze.move_down()
-    maze.print()
-else:
-    print("Invalid argument")
+while True:
+
+    # i = input()
+    #
+    # if i == 'R':
+    #     maze.players[0].move_right()
+    #     maze.print()
+    # elif i == 'L':
+    #     maze.players[0].move_left()
+    #     maze.print()
+    #
+    # elif i == 'U':
+    #     maze.players[0].move_up()
+    #     maze.print()
+    # elif i == 'D':
+    #     maze.players[0].move_down()
+    #     maze.print()
+    # else:
+    #     print("That should not be here!")
+
+    for i in maze.players:
+        i.move_random()
+

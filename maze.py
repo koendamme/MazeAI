@@ -1,69 +1,50 @@
-from termcolor import colored
+from player import Player
 
 
 class Maze:
-    def __init__(self, file_name):
+    def __init__(self, player_count):
         self.matrix = []
-        self.convert_to_map(file_name)
+        self.players = []
+        self.player_count = player_count
+        self.convert_to_map()
 
-    def convert_to_map(self, file_name):
-        file = open(file_name, "r")
+    def convert_to_map(self):
+        file = open("maze.txt", "r")
+        x, y = 0, 0
         for row in file.readlines():
             chars = []
+            x = 0
             for char in row:
-                if char == 'X' or char == '_' or char == "F" or char == 'P':
+                if char == 'X':
                     chars.append(char)
+                    x += 1
+                elif char == 'F':
+                    array = [char]
+                    chars.append(array)
+                elif char == 'S':
+                    players = []
+                    for i in range(0, self.player_count):
+                        player = Player(self, x, y)
+                        players.append(player)
+                        self.players.append(player)
+                    chars.append(players)
+                elif char == '_':
+                    chars.append([])
+                    x += 1
             self.matrix.append(chars)
+            y += 1
 
     def print(self):
         for row in self.matrix:
             for item in row:
-                if item == 'X' or item == '_' or item == 'F' or item == 'P':
+                if item == 'X' or item == 'F':
                     print(item, end=" ")
+                elif item == [] and len(item) == 0:
+                    print('_', end=" ")
+                elif len(item) > 0 and item[0] == 'F':
+                    print('F', end=" ")
+                elif len(item) > 0:
+                    print('P', end=" ")
                 else:
-                    print(colored(item, 'red'), end=" ")
+                    raise ValueError(item)
             print()
-
-    def get_player_position(self):
-        x, y = 0, 0
-
-        for row in self.matrix:
-            for item in row:
-                if item == 'P':
-                    return x, y
-                else:
-                    x += 1
-            x = 0
-            y += 1
-
-    def move_right(self):
-        player_x, player_y = self.get_player_position()
-
-        vertical_array = self.matrix[player_y]
-
-        if vertical_array[player_x + 1] != 'X':
-            vertical_array[player_x] = '_'
-            vertical_array[player_x + 1] = 'P'
-
-    def move_left(self):
-        player_x, player_y = self.get_player_position()
-
-        vertical_array = self.matrix[player_y]
-
-        if vertical_array[player_x - 1] != 'X':
-            vertical_array[player_x] = '_'
-            vertical_array[player_x - 1] = 'P'
-
-    def move_up(self):
-        player_x, player_y = self.get_player_position()
-
-        if self.matrix[player_y - 1][player_x] != 'X':
-            self.matrix[player_y][player_x] = '_'
-            self.matrix[player_y - 1][player_x] = 'P'
-
-    def move_down(self):
-        player_x, player_y = self.get_player_position()
-
-        if self.matrix[player_y + 1][player_x] != 'X':
-            self.matrix[player_y][player_x] = '_'
-            self.matrix[player_y + 1][player_x] = 'P'
