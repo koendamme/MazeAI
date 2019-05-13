@@ -12,6 +12,7 @@ class Maze:
         self.players = []
         self.player_count = player_count
         self.generation = 0
+        self.finished = False
 
     def initiate_empty_map(self):
         self.matrix = []
@@ -55,7 +56,7 @@ class Maze:
 
         self.populate(players)
 
-        while True:
+        while not self.finished:
             for i in self.players:
                 for g in i.chromosome:
                     if g == 1:
@@ -66,31 +67,33 @@ class Maze:
                         i.move_up()
                     elif g == 4:
                         i.move_down()
-                    else:
-                        print("That should not be here")
+
+                i.fitness = self.calc_fitness(i)
 
             self.print()
 
             print("Generation: " + self.generation.__str__())
-            time.sleep(.2)
+            # time.sleep(.2)
             self.create_new_generation()
+
+        print("Finished..")
 
     def create_new_generation(self):
         self.initiate_empty_map()
-        population = sorted(self.players, key=lambda x: x.fitness, reverse=True)
+        population = sorted(self.players, key=lambda x: x.fitness)
 
         for player in population:
             player.set_position(self.start_x, self.start_y)
 
         new_generation = []
 
-        s = int((10*self.player_count)/100)
-        new_generation.extend(population[:s])
+        # s = int((10*self.player_count)/100)
+        # new_generation.extend(population[:s])
 
-        s = int((90 * self.player_count) / 100)
-        for _ in range(s):
-            parent1 = random.choice(population[:50])
-            parent2 = random.choice(population[:50])
+        # s = int((90 * self.player_count) / 100)
+        for _ in range(self.player_count):
+            parent1 = random.choice(population[:self.player_count])
+            parent2 = random.choice(population[:self.player_count])
             child = parent1.mate(parent2)
             child.set_position(self.start_x, self.start_y)
             new_generation.append(child)
@@ -98,17 +101,23 @@ class Maze:
         self.generation += 1
         self.populate(new_generation)
 
+    def calc_fitness(self, player):
+        return (player.x_position - self.start_x) + (player.y_position - self.start_y) + player.penalties
+
     def print(self):
+        best_player = max(self.players, key=lambda player: player.fitness)
+
         for row in self.matrix:
             for item in row:
                 if item == 'X' or item == 'F':
                     print(item, end=" ")
-                elif item == [] and len(item) == 0:
-                    print('_', end=" ")
-                elif len(item) > 0 and item[0] == 'F':
+                elif type(item) == list and 'F' in item:
                     print('F', end=" ")
-                elif len(item) > 0:
+                elif type(item) == list and best_player not in item: # and len(item) == 0:
+                    print('_', end=" ")
+
+                # elif len(item) > 0 and item[0] == 'F':
+                #     print('F', end=" ")
+                elif best_player in item:
                     print('P', end=" ")
-                else:
-                    raise ValueError(item)
             print()
