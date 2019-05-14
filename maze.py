@@ -13,6 +13,8 @@ class Maze:
         self.player_count = player_count
         self.generation = 0
         self.finished = False
+        self.finished_player = None
+        self.finish_pos = (0, 0)
 
     def initiate_empty_map(self):
         self.matrix = []
@@ -27,6 +29,7 @@ class Maze:
                     chars.append(char)
                     x += 1
                 elif char == 'F':
+                    self.finish_pos = (x, y)
                     array = [char]
                     chars.append(array)
                     x += 1
@@ -68,7 +71,10 @@ class Maze:
                     elif g == 4:
                         i.move_down()
 
-                i.fitness = self.calc_fitness(i)
+                '''In case of using the finish position'''
+                # i.fitness = self.calc_fitness(i)
+                '''In case of NOT using the finish position'''
+                i.fitness = self.calc_fitness_without_finish_pos(i)
 
             self.print()
 
@@ -76,21 +82,39 @@ class Maze:
             # time.sleep(.2)
             self.create_new_generation()
 
-        print("Finished..")
+        print("Finished with following path..")
+        time.sleep(4)
+        self.finished_player.finished = False
+        self.initiate_empty_map()
+        self.populate([self.finished_player])
+        for g in self.finished_player.chromosome:
+            if self.finished_player.finished:
+                break
+            else:
+                if g == 1:
+                    self.finished_player.move_right()
+                elif g == 2:
+                    self.finished_player.move_left()
+                elif g == 3:
+                    self.finished_player.move_up()
+                elif g == 4:
+                    self.finished_player.move_down()
+            self.print()
+            time.sleep(.2)
 
     def create_new_generation(self):
         self.initiate_empty_map()
-        population = sorted(self.players, key=lambda x: x.fitness)
+        '''In case of using the finish position'''
+        #population = sorted(self.players, key=lambda x: x.fitness)
+
+        '''In case of NOT using the finish position'''
+        population = sorted(self.players, key=lambda x: x.fitness, reverse=True)
 
         for player in population:
             player.set_position(self.start_x, self.start_y)
 
         new_generation = []
 
-        # s = int((10*self.player_count)/100)
-        # new_generation.extend(population[:s])
-
-        # s = int((90 * self.player_count) / 100)
         for _ in range(self.player_count):
             parent1 = random.choice(population[:self.player_count])
             parent2 = random.choice(population[:self.player_count])
@@ -102,10 +126,17 @@ class Maze:
         self.populate(new_generation)
 
     def calc_fitness(self, player):
-        return (player.x_position - self.start_x) + (player.y_position - self.start_y) + player.penalties
+        return (self.finish_pos[0] - player.x_position) + (self.finish_pos[1] - player.y_position) + player.penalties
+
+    def calc_fitness_without_finish_pos(self, player):
+        return (player.x_position - self.start_x) + (player.y_position - self.start_y) - player.penalties
 
     def print(self):
-        best_player = max(self.players, key=lambda player: player.fitness)
+        '''In case of using the finish position'''
+        # best_player = sorted(self.players, key=lambda x: x.fitness)[0]
+
+        '''In case of NOT using the finish position'''
+        best_player = sorted(self.players, key=lambda x: x.fitness, reverse=True)[0]
 
         for row in self.matrix:
             for item in row:
